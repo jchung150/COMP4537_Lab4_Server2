@@ -1,8 +1,8 @@
 {
-    "rewrites": [
-      {
-        "source": "/(.*)",
-        "destination": "/app.js"
-      }
-    ]
+  "functions": {
+    "api/app.js": {
+      "memory": 128,
+      "maxDuration": 10
+    }
   }
+}

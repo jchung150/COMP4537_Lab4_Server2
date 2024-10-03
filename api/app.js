@@ -1,6 +1,6 @@
 const http = require('http');
 const url = require('url');
-const userStrings = require('./lang/en/en.js'); 
+const userStrings = require('../lang/en/en.js'); 
 
 // Temporary wildcard for CORS
 const ALLOWED_ORIGIN = '*'; 
