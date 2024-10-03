@@ -57,6 +57,7 @@ function handleCors(res) {
     res.setHeader('Access-Control-Allow-Origin', ALLOWED_ORIGIN); 
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    res.setHeader('Access-Control-Max-Age', '86400');
 }
 
 // Handle POST request
@@ -127,7 +128,7 @@ const server = http.createServer((req, res) => {
     // Handle OPTIONS request for CORS Preflight
     if (req.method === 'OPTIONS') {
         handleCors(res);
-        res.writeHead(204);
+        res.writeHead(204); // No Content
         res.end();
     }
     // Handle POST request
