@@ -2,7 +2,7 @@ const http = require('http');
 const url = require('url');
 
 // Importing the userStrings from the correct path
-const userStrings = require('../lang/en/user');
+const userStrings = require('../lang/en/en');
 
 // Dictionary class to store words and their definitions
 class Dictionary {
@@ -79,7 +79,7 @@ function handlePost(req, res) {
             const word = parsedBody.word;
             const definition = parsedBody.definition;
 
-            if (!word || !definition || !/^[a-zA-Z]+$/.test(word)) {
+            if (!word || !definition || !/^[a-zA-Z]+$/.test(word.trim())) {
                 res.writeHead(400, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
                 res.end(JSON.stringify({ error: userStrings.invalidData }));  // Using localized message
                 return;
