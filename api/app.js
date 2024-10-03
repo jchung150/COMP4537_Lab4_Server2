@@ -1,158 +1,105 @@
 const http = require('http');
 const url = require('url');
-const userStrings = require('../lang/en/en.js'); 
+const userStrings = require('./lang/en/en.js');
 
-// Temporary wildcard for CORS
-const ALLOWED_ORIGIN = '*'; 
-//const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN || 'https://comp4537lab04server1.netlify.app';
+let dictionary = [];
+let totalRequests = 0;
 
-class Dictionary {
-    constructor() {
-        this.entries = {};
-        this.requestCount = 0;
-    }
+// Function to handle GET requests
+function handleGETRequest(req, res) {
+    const parsedUrl = url.parse(req.url, true);
+    const pathname = parsedUrl.pathname;
 
-    addWord(word, definition) {
-        this.requestCount++;
-        if (this.entries[word]) {
-            return {
-                message: userStrings.wordExists,
-                requestCount: this.requestCount,
-                totalEntries: this.getTotalEntries(),
-            };
+    if (pathname === '/api/definitions') { 
+        const word = parsedUrl.query.word;
+        const result = dictionary.find(entry => entry.word === word);
+
+        if (result) {
+            totalRequests++;
+            res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+            res.end(JSON.stringify({
+                word: result.word,
+                definition: result.definition,
+                totalRequests: totalRequests,
+                totalEntries: dictionary.length
+            }));
         } else {
-            this.entries[word] = definition;
-            return {
-                message: `New entry added for '${word}' with definition '${definition}'`,
-                requestCount: this.requestCount,
-                totalEntries: this.getTotalEntries(),
-            };
+            res.writeHead(404, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+            res.end(JSON.stringify({ message: userStrings.notFound.replace('{term}', word) }));
         }
-    }
-
-    getDefinition(word) {
-        this.requestCount++;
-        if (this.entries[word]) {
-            return {
-                word: word,
-                definition: this.entries[word],
-                requestCount: this.requestCount,
-            };
-        } else {
-            return {
-                message: userStrings.notFound.replace('{term}', word),
-            };
-        }
-    }
-
-    getTotalEntries() {
-        return Object.keys(this.entries).length;
+    } else {
+        res.writeHead(404, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+        res.end(JSON.stringify({ message: userStrings.endpointNotFound }));
     }
 }
 
-const dictionary = new Dictionary();
-
-// Handle CORS Preflight and Requests
-function handleCors(res) {
-    res.setHeader('Access-Control-Allow-Origin', ALLOWED_ORIGIN); 
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-    res.setHeader('Access-Control-Max-Age', '86400'); 
-}
-
-// Handle POST request
-function handlePost(req, res) {
+// Function to handle POST requests
+function handlePOSTRequest(req, res) {
     let body = '';
 
-    req.on('data', chunk => {
+    req.on('data', (chunk) => {
         body += chunk.toString();
     });
 
     req.on('end', () => {
         try {
-            const parsedBody = JSON.parse(body);
-            const word = parsedBody.word;
-            const definition = parsedBody.definition;
+            const data = JSON.parse(body);
+            const word = data.word;
+            const definition = data.definition;
 
-            if (!word || !definition || !/^[a-zA-Z]+$/.test(word)) {
-                res.writeHead(400, {
-                    'Content-Type': 'application/json',
-                    'Access-Control-Allow-Origin': ALLOWED_ORIGIN, 
-                });
+            if (word && definition) {
+                totalRequests++;
+                const existingWordIndex = dictionary.findIndex(entry => entry.word === word);
+
+                if (existingWordIndex !== -1) {
+                    res.writeHead(400, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+                    res.end(JSON.stringify({ message: userStrings.wordExists }));
+                } else {
+                    dictionary.push({ word, definition });
+                    res.writeHead(201, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+                    res.end(JSON.stringify({
+                        message: `Word '${word}' added successfully!`,
+                        totalRequests: totalRequests,
+                        totalEntries: dictionary.length
+                    }));
+                }
+            } else {
+                res.writeHead(400, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
                 res.end(JSON.stringify({ error: userStrings.invalidData }));
-                return;
             }
-
-            const result = dictionary.addWord(word, definition);
-            res.writeHead(201, {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': ALLOWED_ORIGIN, 
-            });
-            res.end(JSON.stringify(result));
-        } catch (e) {
-            res.writeHead(400, {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': ALLOWED_ORIGIN, 
-            });
+        } catch (error) {
+            console.error('Error parsing JSON:', error);
+            res.writeHead(400, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
             res.end(JSON.stringify({ error: userStrings.invalidJSON }));
         }
     });
 }
 
-// Handle GET request
-function handleGet(req, res) {
-    const queryObject = url.parse(req.url, true).query;
-    const word = queryObject.word;
-
-    if (!word || !/^[a-zA-Z]+$/.test(word)) {
-        res.writeHead(400, {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
-        });
-        res.end(JSON.stringify({ error: userStrings.invalidData }));
-        return;
-    }
-
-    const result = dictionary.getDefinition(word);
-    res.writeHead(200, {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': ALLOWED_ORIGIN, 
-    });
-    res.end(JSON.stringify(result));
-}
-
-// Handle OPTIONS request for CORS Preflight
+// Function to handle OPTIONS requests (for CORS preflight)
 function handleOptionsRequest(res) {
-    handleCors(res);
-    res.writeHead(204); // No Content
+    res.writeHead(204, {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type'
+    });
     res.end();
 }
 
 // Create the server
 const server = http.createServer((req, res) => {
+    const method = req.method;
     const parsedUrl = url.parse(req.url, true);
+    const pathname = parsedUrl.pathname;
 
-    // Handle OPTIONS request for CORS Preflight
-    if (req.method === 'OPTIONS') {
+    if (method === 'GET' && pathname === '/api/definitions') {
+        handleGETRequest(req, res);
+    } else if (method === 'POST' && pathname === '/api/definitions') {
+        handlePOSTRequest(req, res);
+    } else if (method === 'OPTIONS') {
         handleOptionsRequest(res);
-    }
-    // Handle POST request
-    else if (req.method === 'POST' && parsedUrl.pathname === '/api/definitions') {
-        handleCors(res);
-        handlePost(req, res);
-    }
-    // Handle GET request
-    else if (req.method === 'GET' && parsedUrl.pathname === '/api/definitions') {
-        handleCors(res);
-        handleGet(req, res);
-    }
-    // Handle unknown routes
-    else {
-        res.writeHead(404, {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': ALLOWED_ORIGIN, 
-        });
-        res.end(JSON.stringify({ error: userStrings.endpointNotFound }));
+    } else {
+        res.writeHead(405, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+        res.end(JSON.stringify({ message: 'Method not allowed.' }));
     }
 });
 
