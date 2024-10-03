@@ -1,10 +1,10 @@
 const http = require('http');
 const url = require('url');
-
 const userStrings = require('./lang/en/en.js'); 
 
-// Define allowed origin 
-const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN || 'https://comp4537lab04server1.netlify.app';
+// Temporary wildcard for CORS
+const ALLOWED_ORIGIN = '*'; 
+//const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN || 'https://comp4537lab04server1.netlify.app';
 
 class Dictionary {
     constructor() {
@@ -57,7 +57,7 @@ function handleCors(res) {
     res.setHeader('Access-Control-Allow-Origin', ALLOWED_ORIGIN); 
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-    res.setHeader('Access-Control-Max-Age', '86400');
+    res.setHeader('Access-Control-Max-Age', '86400'); 
 }
 
 // Handle POST request
@@ -121,15 +121,20 @@ function handleGet(req, res) {
     res.end(JSON.stringify(result));
 }
 
+// Handle OPTIONS request for CORS Preflight
+function handleOptionsRequest(res) {
+    handleCors(res);
+    res.writeHead(204); // No Content
+    res.end();
+}
+
 // Create the server
 const server = http.createServer((req, res) => {
     const parsedUrl = url.parse(req.url, true);
 
     // Handle OPTIONS request for CORS Preflight
     if (req.method === 'OPTIONS') {
-        handleCors(res);
-        res.writeHead(204); // No Content
-        res.end();
+        handleOptionsRequest(res);
     }
     // Handle POST request
     else if (req.method === 'POST' && parsedUrl.pathname === '/api/definitions') {
