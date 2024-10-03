@@ -51,7 +51,7 @@ const dictionary = new Dictionary();
 
 // Handle CORS Preflight and Requests
 function handleCors(res) {
-    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Origin', 'https://comp4537lab04server1.netlify.app');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 }
@@ -73,7 +73,7 @@ function handlePost(req, res) {
             if (!word || !definition || !/^[a-zA-Z]+$/.test(word)) {
                 res.writeHead(400, {
                     'Content-Type': 'application/json',
-                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Origin': 'https://comp4537lab04server1.netlify.app',
                 });
                 res.end(JSON.stringify({ error: userStrings.invalidData }));
                 return;
@@ -82,13 +82,13 @@ function handlePost(req, res) {
             const result = dictionary.addWord(word, definition);
             res.writeHead(201, {
                 'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Origin': 'https://comp4537lab04server1.netlify.app',
             });
             res.end(JSON.stringify(result));
         } catch (e) {
             res.writeHead(400, {
                 'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Origin': 'https://comp4537lab04server1.netlify.app',
             });
             res.end(JSON.stringify({ error: userStrings.invalidJSON }));
         }
@@ -103,7 +103,7 @@ function handleGet(req, res) {
     if (!word || !/^[a-zA-Z]+$/.test(word)) {
         res.writeHead(400, {
             'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Origin': 'https://comp4537lab04server1.netlify.app',
         });
         res.end(JSON.stringify({ error: userStrings.invalidData }));
         return;
@@ -112,7 +112,7 @@ function handleGet(req, res) {
     const result = dictionary.getDefinition(word);
     res.writeHead(200, {
         'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Origin': 'https://comp4537lab04server1.netlify.app',
     });
     res.end(JSON.stringify(result));
 }
@@ -141,7 +141,7 @@ const server = http.createServer((req, res) => {
     else {
         res.writeHead(404, {
             'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Origin': 'https://comp4537lab04server1.netlify.app',
         });
         res.end(JSON.stringify({ error: userStrings.endpointNotFound }));
     }
