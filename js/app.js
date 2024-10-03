@@ -1,10 +1,8 @@
 const http = require('http');
 const url = require('url');
 
-// Importing userStrings from lang/en/en.js
 const userStrings = require('../lang/en/en.js');
 
-// Dictionary class to store words and their definitions
 class Dictionary {
     constructor() {
         this.entries = {};
@@ -51,17 +49,14 @@ class Dictionary {
 
 const dictionary = new Dictionary();
 
-// Function to handle CORS preflight requests (OPTIONS)
-function handleCors(req, res) {
-    res.writeHead(204, {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type',
-    });
-    res.end();
+// Handle CORS Preflight and Requests
+function handleCors(res) {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 }
 
-// Function to handle POST requests
+// Handle POST request
 function handlePost(req, res) {
     let body = '';
 
@@ -78,7 +73,7 @@ function handlePost(req, res) {
             if (!word || !definition || !/^[a-zA-Z]+$/.test(word)) {
                 res.writeHead(400, {
                     'Content-Type': 'application/json',
-                    'Access-Control-Allow-Origin': '*'
+                    'Access-Control-Allow-Origin': '*',
                 });
                 res.end(JSON.stringify({ error: userStrings.invalidData }));
                 return;
@@ -87,20 +82,20 @@ function handlePost(req, res) {
             const result = dictionary.addWord(word, definition);
             res.writeHead(201, {
                 'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*'
+                'Access-Control-Allow-Origin': '*',
             });
             res.end(JSON.stringify(result));
         } catch (e) {
             res.writeHead(400, {
                 'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*'
+                'Access-Control-Allow-Origin': '*',
             });
             res.end(JSON.stringify({ error: userStrings.invalidJSON }));
         }
     });
 }
 
-// Function to handle GET requests
+// Handle GET request
 function handleGet(req, res) {
     const queryObject = url.parse(req.url, true).query;
     const word = queryObject.word;
@@ -108,7 +103,7 @@ function handleGet(req, res) {
     if (!word || !/^[a-zA-Z]+$/.test(word)) {
         res.writeHead(400, {
             'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*'
+            'Access-Control-Allow-Origin': '*',
         });
         res.end(JSON.stringify({ error: userStrings.invalidData }));
         return;
@@ -117,35 +112,41 @@ function handleGet(req, res) {
     const result = dictionary.getDefinition(word);
     res.writeHead(200, {
         'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*'
+        'Access-Control-Allow-Origin': '*',
     });
     res.end(JSON.stringify(result));
 }
 
-// Create the server and handle requests
+// Create the server
 const server = http.createServer((req, res) => {
     const parsedUrl = url.parse(req.url, true);
 
-    // Handle CORS preflight request
+    // Handle OPTIONS request for CORS Preflight
     if (req.method === 'OPTIONS') {
-        handleCors(req, res);
+        handleCors(res);
+        res.writeHead(204);
+        res.end();
     }
-    // Handle POST requests to add a word and definition
+    // Handle POST request
     else if (req.method === 'POST' && parsedUrl.pathname === '/api/definitions') {
+        handleCors(res);
         handlePost(req, res);
     }
-    // Handle GET requests to retrieve a word's definition
+    // Handle GET request
     else if (req.method === 'GET' && parsedUrl.pathname === '/api/definitions') {
+        handleCors(res);
         handleGet(req, res);
     }
     // Handle unknown routes
     else {
         res.writeHead(404, {
             'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*'
+            'Access-Control-Allow-Origin': '*',
         });
         res.end(JSON.stringify({ error: userStrings.endpointNotFound }));
     }
 });
 
-server.listen(3000);
+// Start the server
+const PORT = process.env.PORT || 3000;
+server.listen(PORT);
