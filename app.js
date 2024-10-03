@@ -1,7 +1,7 @@
 const http = require('http');
 const url = require('url');
 
-const userStrings = require('../lang/en/en.js'); 
+const userStrings = require('./lang/en/en.js'); 
 
 // Define allowed origin 
 const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN || 'https://comp4537lab04server1.netlify.app';
