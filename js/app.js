@@ -1,22 +1,21 @@
 const http = require('http');
 const url = require('url');
 
-// Importing the userStrings from the correct path
-const userStrings = require('../lang/en/en');
+// Importing userStrings from lang/en/en.js
+const userStrings = require('../lang/en/en.js');
 
 // Dictionary class to store words and their definitions
 class Dictionary {
     constructor() {
-        this.entries = {}; // Dictionary entries { word: definition }
-        this.requestCount = 0; // Total number of requests handled
+        this.entries = {};
+        this.requestCount = 0;
     }
 
-    // Add a new word and definition
     addWord(word, definition) {
         this.requestCount++;
         if (this.entries[word]) {
             return {
-                message: userStrings.wordExists,  // Using localized message
+                message: userStrings.wordExists,
                 requestCount: this.requestCount,
                 totalEntries: this.getTotalEntries(),
             };
@@ -30,7 +29,6 @@ class Dictionary {
         }
     }
 
-    // Get the definition of a word
     getDefinition(word) {
         this.requestCount++;
         if (this.entries[word]) {
@@ -41,18 +39,16 @@ class Dictionary {
             };
         } else {
             return {
-                message: userStrings.notFound.replace('{term}', word),  // Replacing placeholder
+                message: userStrings.notFound.replace('{term}', word),
             };
         }
     }
 
-    // Get the total number of dictionary entries
     getTotalEntries() {
         return Object.keys(this.entries).length;
     }
 }
 
-// Instantiate the dictionary
 const dictionary = new Dictionary();
 
 // Function to handle CORS preflight requests (OPTIONS)
@@ -65,7 +61,7 @@ function handleCors(req, res) {
     res.end();
 }
 
-// Function to handle POST requests for adding new words
+// Function to handle POST requests
 function handlePost(req, res) {
     let body = '';
 
@@ -79,35 +75,50 @@ function handlePost(req, res) {
             const word = parsedBody.word;
             const definition = parsedBody.definition;
 
-            if (!word || !definition || !/^[a-zA-Z]+$/.test(word.trim())) {
-                res.writeHead(400, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
-                res.end(JSON.stringify({ error: userStrings.invalidData }));  // Using localized message
+            if (!word || !definition || !/^[a-zA-Z]+$/.test(word)) {
+                res.writeHead(400, {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
+                });
+                res.end(JSON.stringify({ error: userStrings.invalidData }));
                 return;
             }
 
             const result = dictionary.addWord(word, definition);
-            res.writeHead(201, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+            res.writeHead(201, {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            });
             res.end(JSON.stringify(result));
         } catch (e) {
-            res.writeHead(400, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
-            res.end(JSON.stringify({ error: userStrings.invalidJSON }));  // Handling invalid JSON error
+            res.writeHead(400, {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            });
+            res.end(JSON.stringify({ error: userStrings.invalidJSON }));
         }
     });
 }
 
-// Function to handle GET requests for retrieving definitions
+// Function to handle GET requests
 function handleGet(req, res) {
     const queryObject = url.parse(req.url, true).query;
     const word = queryObject.word;
 
     if (!word || !/^[a-zA-Z]+$/.test(word)) {
-        res.writeHead(400, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
-        res.end(JSON.stringify({ error: userStrings.invalidData }));  // Using localized message
+        res.writeHead(400, {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+        });
+        res.end(JSON.stringify({ error: userStrings.invalidData }));
         return;
     }
 
     const result = dictionary.getDefinition(word);
-    res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+    res.writeHead(200, {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+    });
     res.end(JSON.stringify(result));
 }
 
@@ -129,12 +140,12 @@ const server = http.createServer((req, res) => {
     }
     // Handle unknown routes
     else {
-        res.writeHead(404, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
-        res.end(JSON.stringify({ error: userStrings.endpointNotFound }));  // Using localized message
+        res.writeHead(404, {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+        });
+        res.end(JSON.stringify({ error: userStrings.endpointNotFound }));
     }
 });
 
-// Start the server on port 3000
-server.listen(3000, () => {
-    console.log('Server is running on http://localhost:3000');
-});
+server.listen(3000);
