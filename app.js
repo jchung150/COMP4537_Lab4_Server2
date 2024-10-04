@@ -1,6 +1,6 @@
 const http = require("http");
 const url = require("url");
-const userStrings = require("./lang/en/en.json");
+const userStrings = require("./lang/en/en");
 
 // Define allowed origin as a variable
 const ALLOWED_ORIGIN = "https://boisterous-tiramisu-1a9f29.netlify.app";
