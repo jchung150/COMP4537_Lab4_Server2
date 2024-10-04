@@ -2,6 +2,9 @@ const http = require('http');
 const url = require('url');
 const userStrings = require('./lang/en/en.js');
 
+// Define allowed origin as a variable
+const ALLOWED_ORIGIN = 'https://comp4537lab04server1.netlify.app';
+
 let dictionary = [];
 let totalRequests = 0;
 
@@ -16,7 +19,10 @@ function handleGETRequest(req, res) {
 
         if (result) {
             totalRequests++;
-            res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+            res.writeHead(200, {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': ALLOWED_ORIGIN
+            });
             res.end(JSON.stringify({
                 word: result.word,
                 definition: result.definition,
@@ -24,11 +30,17 @@ function handleGETRequest(req, res) {
                 totalEntries: dictionary.length
             }));
         } else {
-            res.writeHead(404, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+            res.writeHead(404, {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': ALLOWED_ORIGIN
+            });
             res.end(JSON.stringify({ message: userStrings.notFound.replace('{term}', word) }));
         }
     } else {
-        res.writeHead(404, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+        res.writeHead(404, {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': ALLOWED_ORIGIN
+        });
         res.end(JSON.stringify({ message: userStrings.endpointNotFound }));
     }
 }
@@ -52,11 +64,17 @@ function handlePOSTRequest(req, res) {
                 const existingWordIndex = dictionary.findIndex(entry => entry.word === word);
 
                 if (existingWordIndex !== -1) {
-                    res.writeHead(400, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+                    res.writeHead(400, {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': ALLOWED_ORIGIN
+                    });
                     res.end(JSON.stringify({ message: userStrings.wordExists }));
                 } else {
                     dictionary.push({ word, definition });
-                    res.writeHead(201, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+                    res.writeHead(201, {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': ALLOWED_ORIGIN
+                    });
                     res.end(JSON.stringify({
                         message: `Word '${word}' added successfully!`,
                         totalRequests: totalRequests,
@@ -64,12 +82,18 @@ function handlePOSTRequest(req, res) {
                     }));
                 }
             } else {
-                res.writeHead(400, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+                res.writeHead(400, {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': ALLOWED_ORIGIN
+                });
                 res.end(JSON.stringify({ error: userStrings.invalidData }));
             }
         } catch (error) {
             console.error('Error parsing JSON:', error);
-            res.writeHead(400, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+            res.writeHead(400, {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': ALLOWED_ORIGIN
+            });
             res.end(JSON.stringify({ error: userStrings.invalidJSON }));
         }
     });
@@ -78,7 +102,7 @@ function handlePOSTRequest(req, res) {
 // Function to handle OPTIONS requests (for CORS preflight)
 function handleOptionsRequest(res) {
     res.writeHead(204, {
-        'Access-Control-Allow-Origin': 'https://comp4537lab04server1.netlify.app',
+        'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
         'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
         'Access-Control-Allow-Headers': 'Content-Type'
     });
@@ -98,7 +122,10 @@ const server = http.createServer((req, res) => {
     } else if (method === 'OPTIONS') {
         handleOptionsRequest(res);
     } else {
-        res.writeHead(405, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+        res.writeHead(405, {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': ALLOWED_ORIGIN
+        });
         res.end(JSON.stringify({ message: 'Method not allowed.' }));
     }
 });
