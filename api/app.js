@@ -78,7 +78,7 @@ function handlePOSTRequest(req, res) {
 // Function to handle OPTIONS requests (for CORS preflight)
 function handleOptionsRequest(res) {
     res.writeHead(204, {
-        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Origin': 'https://comp4537lab04server1.netlify.app',
         'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
         'Access-Control-Allow-Headers': 'Content-Type'
     });
