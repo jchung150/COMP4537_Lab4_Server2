@@ -1,3 +1,12 @@
+/*
+  This JavaScript file contains code generated with assistance from ChatGPT,
+  an AI language model developed by OpenAI.
+
+  ChatGPT was used for advice on certain functionalities and structures in
+  this project.
+
+  For more information, visit: https://openai.com/chatgpt
+*/
 const http = require("http");
 const url = require("url");
 const userStrings = require("./lang/en/en");
