@@ -12,7 +12,7 @@ const url = require("url");
 const userStrings = require("./lang/en/en");
 
 // Define allowed origin as a variable
-const ALLOWED_ORIGIN = "https://boisterous-tiramisu-1a9f29.netlify.app";
+const ALLOWED_ORIGIN = "https://comp4537lab04.netlify.app";
 
 let dictionary = [];
 let totalRequests = 0;
